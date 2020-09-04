@@ -20,21 +20,19 @@ class User(Base):
     account_type = Column(String(250), nullable=False)
 
 
-    # one to many relationship with comments, here parent
+    # one to many relationship with comments(user who is doing comment), here parent
     sent_comments = relationship("Comment", backref="user_commenting", foreign_keys=["Comment.user_commenting_id"])
-    recieved_comments = relationship("Comment", backref="user_commented", foreign_keys=[ "Comment.user_commented_id"])
 
-    # one to many relationship with direct message, here parent
+    # one to many relationship with post (user posting), here parent
+    children = relationship("Post", back_populates="user")
+    
+    # one to many relationship with direct message(user sending message and user recieving message), here parent
     sent_messages = relationship("Direct_message", backref="user_sending_message", foreign_keys=["Direct_message.user_sending_message_id"])
     recieved_messages = relationship("Direct_message", backref="user_receiving_message", foreign_keys=[ "Direct_message.user_receiving_message_id"])
 
-    # one to many relationship with following, here parent
+    # one to many relationship with following(user following and user followed), here parent
     follower = relationship("Follows", backref="user_following", foreign_keys=["Follows.follower_id"])
     followed = relationship("Follows", backref="user_followed", foreign_keys=[ "Follows.followed_id"])
-
-    # one to many relationship with post, here parent
-    children = relationship("Post", back_populates="user")
-    
 
 class Follows(Base):
     __tablename__ = 'follows'
@@ -53,9 +51,11 @@ class Post(Base):
     id = Column(Integer, primary_key=True)
     media = Column(String(250), nullable=False)
 
-    # # one to many relationship, child
+    # one to many relationship(user id who is posting), child
     post_user_id = Column(Integer, ForeignKey('user.id'))
-    parent = relationship("User", back_populates="post")
+
+    # one to may relationship(post been commented), Parent
+    post_commented = relationship("Comment", backref="post_commented", foreign_keys=["Comment.post_commented_id "])
 
 class Comment(Base):
     __tablename__ = 'comment'
@@ -66,9 +66,10 @@ class Comment(Base):
 
     # One to many relationship, here child
     user_commenting_id = Column(Integer, ForeignKey('user.id'))
-    user_commented_id  = Column(Integer, ForeignKey('user.id'))
-    
 
+    # post commented
+    post_commented_id = Column(Integer, ForeignKey('post.id'))
+   
 class Direct_message(Base):
     __tablename__ = 'direct message'
     # Here we define columns for the table address.
